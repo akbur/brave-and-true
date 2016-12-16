@@ -368,4 +368,126 @@ failed-protagonist-names
 (my-first ["oven" "bike" "war-axe"])
 ; => oven
 
-;; LEAVING OFF ON PAGE 82 of PDF, 55 of book itself
+(defn chooser
+  [[first-choice second-choice & unimportant-choices]]
+  (println (str "Your first choice is: " first-choice))
+  (println (str "Your second choice is: " second-choice))
+  (println (str "We're ignoring the rest of your choices. "
+                "Here they are in case you need to cry over them: "
+                (clojure.string/join ", " unimportant-choices))))
+
+(chooser ["Marmalade", "Handsome Jack", "Pigpen", "Aquaman"])
+
+;; You can also destructure maps
+(defn announce-treasure-location
+  [{lat :lat lng :lng}]
+  (println (str "Treasure lat: " lat))
+  (println (str "Treasure lng: " lng)))
+(announce-treasure-location {:lat 28.22 :lng 81.33})
+
+;; And another way
+(defn announce-treasure-location-2
+  [{:keys [lat lng]}]
+  (println (str "Treasure lat: " lat))
+  (println (str "Treasure lng: " lng)))
+(announce-treasure-location-2 {:lat 100 :lng 50})
+
+;; Function Body
+;; returns the last form evaluated
+(defn illustrative-function
+  []
+  (+ 1 304)
+  30
+  :joe)
+(illustrative-function) ; => :joe
+
+;; Anonymous Functions!
+(map (fn [name] (str "Hi, " name)) ["Darth Vader", "Mr. Magoo"])
+((fn [x] (* x 3)) 8)
+
+;; Another, more compact syntax for anonymous functions:
+(#(* % 3) 8)
+(map #(str "Hi, " %) ["Kris", "Whitman"])
+
+;; and with multiple arguments
+(#(str %1 " and " %2) "soup beans" "cornbread")
+
+;; and with a rest parameter
+(#(identity %&) 1 "blarg" :yip)
+
+;; use this style for simple anonymous functions
+;; use fn for longer, more complex anonymous functions
+
+;; Returning Functions
+;; the returned functions are closures
+(defn inc-maker
+  "Create a custom incrementor"
+  [inc-by]
+  #(+ % inc-by))
+
+(def inc3 (inc-maker 3))
+
+(inc3 7)
+; => 10
+
+;; LET
+;; introduces a new scope
+(let [x 3]
+  x)
+(def dalmatian-list
+  ["Pongo" "Perdita" "Puppy 1" "Puppy 2"])
+(let [dalmatians (take 2 dalmatian-list)]
+  dalmatians)
+(def x 0)
+(let [x 1] x)
+
+(let [[pongo & dalmatians] dalmatian-list]
+  [pongo dalmatians])
+; => ["Pongo" ("Perdita" "Puppy 1" "Puppy 2")]
+
+;; LOOP
+(loop [iteration 0]
+  (println (str "Iteration " iteration))
+  (if (> iteration 3)
+    (println "Goodbye")
+    (recur (inc iteration))))
+
+;; you could accomplish the same by:
+;; (loop has better performance)
+(defn recursive-printer
+  ([]
+    (recursive-printer 0))
+  ([iteration]
+    (println iteration)
+    (if (> iteration 3)
+      (println "Goodbye!")
+      (recursive-printer (inc iteration)))))
+(recursive-printer)
+
+;; REGULAR EXPRESSIONS
+#"regular-expression"
+(re-find #"^left-" "left-eye") ; => "left-"
+(re-find #"^left-" "cleft-chin") ; => nil
+(re-find #"^left-" "wongleblart") ; => nil
+
+;; REDUCE
+(reduce + [1 2 3 4]) ; => 10
+;; (+ (+ (+ 1 2) 3) 4 )
+;; 1. apply the given function to the first two elements of a sequence (+ 1 2)
+;; 2. apply the given function to the result and the next element of the sequence
+;; (the result of step 1 is 3, and the next element of the seq is 3 so (+ 3 3)
+;; 3. repeat step 2 for every remaining element in the sequence
+;; reduce also takes an optional initial value
+(reduce + 15 [1 2 3 4]) ; => 25
+
+;; a reduce implementation
+(defn my-reduce
+  ([f initial coll]
+  (loop [result initial
+        remaining coll]
+    (if (empty? remaining)
+      result
+      (recur (f result (first remaining)) (rest remaining)))))
+  ([f [head & tail]]
+    (my-reduce f head tail)))
+(my-reduce + 15 [1 2 3 4])
