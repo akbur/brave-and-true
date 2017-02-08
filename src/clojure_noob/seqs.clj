@@ -303,3 +303,60 @@
 ;; a seqable data structure (into)
 
 ;; PARTIAL
+;; partial takes a func and any number or arguments. It then returns a new func.
+;; When you call the returned func, it calls the original func with the original
+;; arguments you supplied it along with the new arguments
+(def add10 (partial + 10))
+(add10 3)
+
+(def add-missing-elements
+  (partial conj ["water" "earth" "air"]))
+
+(add-missing-elements "unobtanium" "adamantium")
+
+;; here's how you might define it
+(defn my-partial
+  [partialized-fn & args]
+  (fn [& more-args]
+    (apply partialized-fn (into args more-args))))
+
+(def add20 (my-partial + 20))
+
+(add20 3)
+
+;; in this example, the value of add20 is the anonymous func returned by my-partial
+;; defined like this:
+(fn [& more-args]
+  (apply + (into [20] more-args)))
+
+(defn lousy-logger
+  [log-level message]
+  (condp = log-level
+    :warn (clojure.string/lower-case message)
+    :emergency (clojure.string/upper-case message)))
+
+(def warn (partial lousy-logger :warn))
+
+(warn "Red light ahead")
+
+;; COMPLEMENT
+(defn identify-humans
+  [social-security-numbers]
+  (filter #(not (vampire? %))
+          (map vampire-related-details social-security-numbers)))
+
+(def not-vampire? (complement vampire?))
+(defn identify-humans
+  [social-security-numbers]
+  (filter not-vampire?
+    (map vampire-related-details social-security-numbers)))
+
+;; here's how you might implement COMPLEMENT
+(defn my-complement
+  [fun]
+  (fn [&args]
+    (not (apply fun args))))
+
+(def my-pos? (complement neg?))
+(my-pos? 1)
+(my-pos? -1)
